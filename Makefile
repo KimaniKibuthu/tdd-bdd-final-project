@@ -20,9 +20,12 @@ install: ## Install Python dependencies
 	pip install -r requirements.txt
 
 lint: ## Run the linter
-	$(info Running linting...)
+	$(info Running linting and auto-fixing...)
+	black --line-length 127 service tests
+	# Run flake8
 	flake8 service tests --count --select=E9,F63,F7,F82 --show-source --statistics
 	flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
+	# Run pylint
 	pylint service tests --max-line-length=127
 
 .PHONY: tests

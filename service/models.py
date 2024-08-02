@@ -29,8 +29,9 @@ available (boolean) - True for products that are available for adoption
 
 """
 import logging
-from enum import Enum
 from decimal import Decimal
+from enum import Enum
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -76,9 +77,7 @@ class Product(db.Model):
     description = db.Column(db.String(250), nullable=False)
     price = db.Column(db.Numeric, nullable=False)
     available = db.Column(db.Boolean(), nullable=False, default=True)
-    category = db.Column(
-        db.Enum(Category), nullable=False, server_default=(Category.UNKNOWN.name)
-    )
+    category = db.Column(db.Enum(Category), nullable=False, server_default=Category.UNKNOWN.name)
 
     ##################################################
     # INSTANCE METHODS
@@ -120,7 +119,7 @@ class Product(db.Model):
             "description": self.description,
             "price": str(self.price),
             "available": self.available,
-            "category": self.category.name  # convert enum to string
+            "category": self.category.name,  # convert enum to string
         }
 
     def deserialize(self, data: dict):
@@ -136,19 +135,14 @@ class Product(db.Model):
             if isinstance(data["available"], bool):
                 self.available = data["available"]
             else:
-                raise DataValidationError(
-                    "Invalid type for boolean [available]: "
-                    + str(type(data["available"]))
-                )
+                raise DataValidationError("Invalid type for boolean [available]: " + str(type(data["available"])))
             self.category = getattr(Category, data["category"])  # create enum from string
         except AttributeError as error:
             raise DataValidationError("Invalid attribute: " + error.args[0]) from error
         except KeyError as error:
             raise DataValidationError("Invalid product: missing " + error.args[0]) from error
         except TypeError as error:
-            raise DataValidationError(
-                "Invalid product: body of request contained bad or no data " + str(error)
-            ) from error
+            raise DataValidationError("Invalid product: body of request contained bad or no data " + str(error)) from error
         return self
 
     ##################################################
